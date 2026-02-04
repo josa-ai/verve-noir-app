@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Favicon Generator</title>
+</head>
+<body>
+  <canvas id="canvas" width="256" height="256"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Purple background
+    ctx.fillStyle = '#6B21A8';
+    ctx.fillRect(0, 0, 256, 256);
+    
+    // Gold crown
+    ctx.fillStyle = '#D4AF37';
+    ctx.beginPath();
+    ctx.moveTo(128, 40);
+    ctx.lineTo(155, 90);
+    ctx.lineTo(205, 90);
+    ctx.lineTo(165, 125);
+    ctx.lineTo(180, 180);
+    ctx.lineTo(128, 155);
+    ctx.lineTo(76, 180);
+    ctx.lineTo(91, 125);
+    ctx.lineTo(51, 90);
+    ctx.lineTo(101, 90);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Gold border
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    
+    console.log('Favicon generated');
+  </script>
+</body>
+</html>

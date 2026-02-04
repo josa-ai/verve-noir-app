@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- Purple background with rounded corners for Apple touch icon -->
+  <rect x="0" y="0" width="180" height="180" rx="40" fill="#6B21A8"/>
+  
+  <!-- Gold crown/icon -->
+  <path d="M90 27 L108 63 L153 63 L118 90 L126 126 L90 108 L54 126 L62 90 L27 63 L72 63 Z" 
+        fill="#D4AF37" 
+        stroke="#D4AF37" 
+        stroke-width="3"
+        stroke-linejoin="round"/>
+  
+  <!-- Subtle highlight -->
+  <rect x="10" y="10" width="160" height="160" rx="35" fill="none" stroke="#D4AF37" stroke-width="3" opacity="0.4"/>
+</svg>
