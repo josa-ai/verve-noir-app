@@ -17,9 +17,11 @@ interface AuthState {
   setSession: (session: any | null) => void;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       session: null,
       isLoading: false,
@@ -46,7 +48,7 @@ export const useAuthStore = create<AuthState>()(
           .single();
 
         set({
-          user: userData as User,
+          user: userData as unknown as User,
           session: data.session,
           isAuthenticated: true,
           isLoading: false,
@@ -79,7 +81,7 @@ export const useAuthStore = create<AuthState>()(
           .single();
 
         set({
-          user: userData as User,
+          user: userData as unknown as User,
           isAuthenticated: true,
         });
       },

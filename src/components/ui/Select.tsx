@@ -1,6 +1,6 @@
 import { cn } from '../../utils/cn';
 import { ChevronDown } from 'lucide-react';
-import type { SelectHTMLAttributes, ReactNode } from 'react';
+import type { SelectHTMLAttributes } from 'react';
 
 interface SelectOption {
   value: string;

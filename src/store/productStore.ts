@@ -39,7 +39,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       return;
     }
 
-    set({ products: data as Product[], isLoading: false });
+    set({ products: (data as unknown as Product[]) || [], isLoading: false });
   },
 
   fetchProductById: async (id: string) => {
@@ -56,7 +56,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       return;
     }
 
-    set({ selectedProduct: data as Product, isLoading: false });
+    set({ selectedProduct: data as unknown as Product, isLoading: false });
   },
 
   createProduct: async (product: Partial<Product>) => {
@@ -64,7 +64,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
     const { data, error } = await supabase
       .from('products')
-      .insert(product)
+      .insert(product as Record<string, unknown>)
       .select('id')
       .single();
 
@@ -83,7 +83,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
     const { error } = await supabase
       .from('products')
-      .update(updates)
+      .update(updates as Record<string, unknown>)
       .eq('id', id);
 
     if (error) {

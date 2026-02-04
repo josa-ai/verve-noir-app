@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { 
   ShoppingCart, 
-  Package, 
   DollarSign, 
   Truck,
   TrendingUp,

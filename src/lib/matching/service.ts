@@ -14,6 +14,12 @@ export class MatchingService {
     // Determine match status based on confidence
     const matchStatus = this.determineMatchStatus(result.confidence);
 
+    // Get product price if matched
+    let finalPrice: number | null = null;
+    if (result.productId) {
+      finalPrice = await this.getProductPrice(result.productId);
+    }
+
     // Update order item in database
     const { error } = await supabase
       .from('order_items')
@@ -21,7 +27,7 @@ export class MatchingService {
         matched_product_id: result.productId,
         match_confidence: result.confidence,
         match_status: matchStatus,
-        final_price: result.productId ? await this.getProductPrice(result.productId) : null,
+        final_price: finalPrice,
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderItemId);
@@ -62,12 +68,14 @@ export class MatchingService {
     productId: string,
     finalPrice?: number
   ): Promise<void> {
+    const price = finalPrice || await this.getProductPrice(productId);
+
     const { error } = await supabase
       .from('order_items')
       .update({
         matched_product_id: productId,
         match_status: 'confirmed',
-        final_price: finalPrice || (await this.getProductPrice(productId)),
+        final_price: price,
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderItemId);

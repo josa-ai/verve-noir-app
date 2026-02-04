@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import type { Order, OrderStatus } from '../types';
+import type { Order, OrderStatus, OrderItem, Product } from '../types';
 
 interface OrderFilters {
   status: OrderStatus | 'all';
@@ -64,7 +64,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       return;
     }
 
-    set({ orders: data as Order[], isLoading: false });
+    set({ orders: (data as unknown as Order[]) || [], isLoading: false });
   },
 
   fetchOrderById: async (id: string) => {
@@ -96,8 +96,14 @@ export const useOrderStore = create<OrderState>((set, get) => ({
       return;
     }
 
+    // Transform items to include product data
+    const transformedItems: OrderItem[] = ((items as unknown as Array<OrderItem & { product: Product | null }>) || []).map(item => ({
+      ...item,
+      product: item.product || undefined,
+    }));
+
     set({
-      selectedOrder: { ...order, items } as Order,
+      selectedOrder: { ...(order as unknown as Order), items: transformedItems },
       isLoading: false,
     });
   },
@@ -107,7 +113,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
     const { data, error } = await supabase
       .from('orders')
-      .insert(order)
+      .insert(order as Record<string, unknown>)
       .select('id')
       .single();
 
@@ -125,7 +131,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
 
     const { error } = await supabase
       .from('orders')
-      .update(updates)
+      .update(updates as Record<string, unknown>)
       .eq('id', id);
 
     if (error) {

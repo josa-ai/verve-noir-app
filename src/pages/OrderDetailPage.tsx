@@ -141,8 +141,8 @@ export function OrderDetailPage() {
             )}
             {order.status === 'pending' && (
               <Button 
-                variant="success" 
-                className="w-full gap-2"
+                variant="primary" 
+                className="w-full gap-2 bg-green-600 hover:bg-green-700"
                 onClick={handleMarkAsPaid}
               >
                 <CheckCircle className="h-4 w-4" />
