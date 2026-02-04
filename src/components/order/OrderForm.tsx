@@ -4,7 +4,9 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
 import { useOrderStore } from '../../store/orderStore';
+import { useAuthStore } from '../../store/authStore';
 import { matchingService } from '../../lib/matching';
+import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 import type { OrderItemInput } from '../../types';
 
@@ -21,7 +23,8 @@ interface OrderItemForm {
 }
 
 export function OrderForm({ isOpen, onClose }: OrderFormProps) {
-  const { createOrder, fetchOrders } = useOrderStore();
+  const { fetchOrders } = useOrderStore();
+  const { user } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [customerData, setCustomerData] = useState({
@@ -54,6 +57,11 @@ export function OrderForm({ isOpen, onClose }: OrderFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!user?.id) {
+      toast.error('You must be logged in to create orders');
+      return;
+    }
+
     if (!customerData.customer_name || !customerData.customer_email) {
       toast.error('Please fill in customer name and email');
       return;
@@ -69,17 +77,26 @@ export function OrderForm({ isOpen, onClose }: OrderFormProps) {
     setIsSubmitting(true);
 
     try {
-      // Create order
-      const result = await createOrder({
-        ...customerData,
-        status: 'draft',
-      });
+      // Create order with created_by field
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_name: customerData.customer_name,
+          customer_email: customerData.customer_email,
+          customer_phone: customerData.customer_phone,
+          customer_address: customerData.customer_address,
+          status: 'draft',
+          created_by: user.id,
+        })
+        .select('id')
+        .single();
 
-      if (!result?.id) {
-        throw new Error('Failed to create order');
+      if (orderError || !orderData) {
+        console.error('Order creation error:', orderError);
+        throw new Error(orderError?.message || 'Failed to create order');
       }
 
-      const orderId = result.id;
+      const orderId = orderData.id;
 
       // Create order items
       const itemInserts = validItems.map((item, index) => ({
@@ -92,11 +109,12 @@ export function OrderForm({ isOpen, onClose }: OrderFormProps) {
         match_status: 'pending',
       }));
 
-      const { error: itemsError } = await import('../../lib/supabase').then(m => 
-        m.supabase.from('order_items').insert(itemInserts)
-      );
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(itemInserts);
 
       if (itemsError) {
+        console.error('Items creation error:', itemsError);
         throw itemsError;
       }
 
@@ -110,17 +128,20 @@ export function OrderForm({ isOpen, onClose }: OrderFormProps) {
         };
 
         // Get the order item ID
-        const { data: orderItem } = await import('../../lib/supabase').then(m =>
-          m.supabase
-            .from('order_items')
-            .select('id')
-            .eq('order_id', orderId)
-            .eq('position', i + 1)
-            .single()
-        );
+        const { data: orderItem } = await supabase
+          .from('order_items')
+          .select('id')
+          .eq('order_id', orderId)
+          .eq('position', i + 1)
+          .single();
 
         if (orderItem) {
-          await matchingService.processOrderItem(orderItem.id, itemInput);
+          try {
+            await matchingService.processOrderItem(orderItem.id, itemInput);
+          } catch (matchError) {
+            console.warn('AI matching failed for item:', matchError);
+            // Continue even if matching fails
+          }
         }
       }
 
@@ -139,7 +160,7 @@ export function OrderForm({ isOpen, onClose }: OrderFormProps) {
       
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Failed to create order');
+      toast.error(error instanceof Error ? error.message : 'Failed to create order');
     } finally {
       setIsSubmitting(false);
     }
