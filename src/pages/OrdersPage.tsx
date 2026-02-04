@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Filter, ArrowUpDown } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
 import { OrderStatusBadge } from '../components/ui/Badge';
+import { OrderForm } from '../components/order/OrderForm';
 import { useOrderStore } from '../store/orderStore';
 import { formatDate, formatCurrency, formatOrderNumber } from '../utils/format';
 import type { OrderStatus } from '../types';
@@ -27,6 +28,8 @@ export function OrdersPage() {
     fetchOrders, 
     setFilters 
   } = useOrderStore();
+  
+  const [isOrderFormOpen, setIsOrderFormOpen] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -63,7 +66,11 @@ export function OrdersPage() {
 
           <div className="flex-1" />
 
-          <Button variant="primary" className="gap-2">
+          <Button 
+            variant="primary" 
+            className="gap-2"
+            onClick={() => setIsOrderFormOpen(true)}
+          >
             <Plus className="h-4 w-4" />
             New Order
           </Button>
@@ -106,7 +113,7 @@ export function OrdersPage() {
               ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    No orders found. Orders will appear here when they come in from GoHighLevel.
+                    No orders found. Click "New Order" to create one.
                   </td>
                 </tr>
               ) : (
@@ -150,6 +157,12 @@ export function OrdersPage() {
           </table>
         </div>
       </div>
+
+      {/* Order Form Modal */}
+      <OrderForm 
+        isOpen={isOrderFormOpen} 
+        onClose={() => setIsOrderFormOpen(false)} 
+      />
     </div>
   );
 }
